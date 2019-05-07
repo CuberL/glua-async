@@ -20,9 +20,7 @@ func Sleep(L *lua.LState) int {
 func main() {
 	script := `
 		function work(str)
-			print(str)
-			print("start")
-
+			await(sleep, 3)
 			async(function()
 				for i=3, 1, -1 do
 					await(sleep, 1)
@@ -36,9 +34,6 @@ func main() {
 					print("it's b")
 				end
 			end)
-
-			await(sleep, 13)
-			print("done")
 			return str
 		end
 	`
@@ -63,10 +58,10 @@ func main() {
 	// _, _, rets := L.Resume(th, L.GetGlobal("__wrap").(*lua.LFunction), L.GetGlobal("work").(*lua.LFunction), lua.LString("input"))
 
 	L.CallByParam(lua.P{
-		Fn:      L.GetGlobal("__wrap").(*lua.LFunction),
+		Fn:      async.WrapFunc(L, L.GetGlobal("work").(*lua.LFunction)),
 		NRet:    1,
 		Protect: true,
-	}, L.GetGlobal("work").(*lua.LFunction), lua.LString("hello"))
+	}, lua.LString("hello"))
 
 	for i := 1; i <= L.GetTop(); i++ {
 		log.Println(L.Get(i).String())
