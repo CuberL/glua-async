@@ -1,7 +1,6 @@
 package async
 
 import (
-	"log"
 	"sync"
 
 	"github.com/yuin/gopher-lua"
@@ -31,7 +30,7 @@ func AsyncRun(fn func() []lua.LValue, L *lua.LState) {
 	}()
 }
 
-func WrapFunc(L *lua.LState, fn *lua.LFunction) *lua.LFunction {
+func WrapAsyncFunc(L *lua.LState, fn *lua.LFunction) *lua.LFunction {
 	return L.NewFunction(func(L *lua.LState) int {
 		co, _ := L.NewThread()
 		args := []lua.LValue{}
@@ -77,7 +76,6 @@ func Init(L *lua.LState) {
 	L.SetGlobal("__state", ud)
 	L.SetGlobal("await", L.NewFunctionFromProto(awaitFunc))
 	L.SetGlobal("async", L.NewFunctionFromProto(asyncFunc))
-	// L.SetGlobal("__wrap", L.NewFunction(WrapFunc))
 }
 
 func Schedule(L *lua.LState) []lua.LValue {
@@ -97,7 +95,6 @@ func Schedule(L *lua.LState) []lua.LValue {
 				return vals
 			}
 			_, _, _vals := L.Resume(a.co, nil, a.result...)
-			log.Println(_vals)
 			if len(_vals) > 0 && !(len(_vals) == 1 && _vals[0] == lua.LNil) {
 				vals = _vals
 			}
